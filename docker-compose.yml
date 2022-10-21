@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  front:
+    build: ./front
+    volumes:
+      - ./front/src:/app/src
+    ports:
+      - 3000:3000
+    networks:
+      - grape
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - NODE_ENV=development
+  api:
+    build: ./back
+    environment:
+      - PORT=4000
+    volumes:
+      - ./back/src:/app/src
+    ports:
+      - 4000:4000
+    networks:
+      - grape
+    depends_on:
+      - db
+    extra_hosts:
+      # - "host.docker.internal:host-gateway"
+      - "host.docker.internal:172.17.0.1"
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: wilders
+    ports:
+      - 5433:5432
+    volumes:
+      - ~/dbdata:/var/lib/postgresql/data
+    networks:
+      - grape
+
+
+  adminer:
+    image: adminer
+    depends_on:
+      - db
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - grape
+    
+  # pgadmin:
+  # container_name: pgadmin4_container
+  # image: dpage/pgadmin4
+  # restart: always
+  # environment:
+  #   PGADMIN_DEFAULT_EMAIL: admin@admin.com
+  #   PGADMIN_DEFAULT_PASSWORD: root
+  # ports:
+  #   - "5050:80"
+
+
+networks:
+  grape:
