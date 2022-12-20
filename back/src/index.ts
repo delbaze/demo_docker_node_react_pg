@@ -30,7 +30,7 @@ const start = async (): Promise<void> => {
           user = await new WilderController().findWilderByEmail(email);
         }
       }
-      return {user};
+      return { user };
     },
     csrfPrevention: true,
     cache: "bounded",

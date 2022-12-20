@@ -14,8 +14,10 @@ export const authChecker: AuthChecker<IContext> = (
 ) => {
   // console.log(root);
   if (context.user) {
+    console.log("CONNECTE");
     return true;
   }
+  console.log("NON CONNECTE");
   return false;
 };
 

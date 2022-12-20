@@ -8,7 +8,7 @@ import fetch from "cross-fetch";
 
 const client = new ApolloClient({
   link: new HttpLink({
-    uri: "http://host.docker.internal:4000/",
+    uri: "http://host.docker.internal:4000",
     fetch,
   }),
   cache: new InMemoryCache(),
@@ -25,6 +25,30 @@ const CREATE_WILDER = gql`
   }
 `;
 
+const LOGIN = gql`
+  query Login($password: String!, $email: String!) {
+    login(password: $password, email: $email) {
+      success
+      token
+    }
+  }
+`;
+
+const LIST_WILDERS = gql`
+  query ListWilders {
+    listWilders {
+      success
+      wilders {
+        email
+        last_name
+        first_name
+        age
+      }
+      message
+    }
+  }
+`;
+
 describe("Wilder resolver", () => {
   let email = `test${new Date().getTime()}@gmail.com`;
   let password = "test";
@@ -35,65 +59,49 @@ describe("Wilder resolver", () => {
       mutation: CREATE_WILDER,
       variables: {
         createWilderInput: {
-          age: 20,
-          first_name: "Martine",
-          last_name: "Dupont",
+          age: 30,
           email,
-          password: "test",
+          first_name: "Kevin",
+          password,
+          last_name: "Durand",
         },
       },
     });
+
     expect(res.data?.createWilder).toEqual({
-      age: 20,
-      first_name: "Martine",
-      last_name: "Dupont",
+      age: 30,
+      first_name: "Kevin",
+      last_name: "Durand",
       email,
       __typename: "Wilder",
     });
   });
-
-  it("avoir un token si le wilder est bon", async () => {
+  it("avoir un token si le wilder est correct", async () => {
     const res = await client.query({
-      query: gql`
-        query Query($email: String!, $password: String!) {
-          login(email: $email, password: $password) {
-            success
-            token
-          }
-        }
-      `,
-      variables: { password, email },
+      query: LOGIN,
+      variables: {
+        password,
+        email,
+      },
       fetchPolicy: "no-cache",
     });
-    expect(res.data?.login.token).toMatch(/^(?:[\w-]*\.){2}[\w-]*$/); //(^[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*$)
 
+
+    expect(res.data?.login.success).toBeTruthy();
+    expect(res.data?.login.token).toMatch(/^(?:[\w-]*\.){2}[\w-]*$/); //(^[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*$)
     token = res.data?.login.token;
   });
-
   it("obtenir des informations si le wilder est connecté", async () => {
     const res = await client.query({
-      query: gql`
-        query ListWilders {
-          listWilders {
-            message
-            success
-            wilders {
-              age
-              email
-              first_name
-              last_name
-            }
-          }
-        }
-      `,
-      variables: { password, email},
+      query: LIST_WILDERS,
       fetchPolicy: "no-cache",
       context: {
         headers: {
-          authorization: "Bearer " + token,
+          authorization: `Bearer ${token}`,
         },
       },
     });
+  
     expect(res.data?.listWilders.success).toBeTruthy();
     expect(res.data?.listWilders.wilders.length).toBeGreaterThan(0);
   });

@@ -4,7 +4,7 @@ import Wilder, { CreateWilderInput, WilderListData, WilderLogin } from "../entit
 
 @Resolver(Wilder)
 export class WilderResolver {
-  // @Authorized()
+  @Authorized()
   @Query(() => WilderListData)
   async listWilders(): Promise<WilderListData> {
     let wilders = await new WilderController().listWilders();
