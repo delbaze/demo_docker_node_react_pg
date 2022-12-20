@@ -6,7 +6,7 @@ services:
     volumes:
       - ./front/src:/app/src
     ports:
-      - 3000:3000
+      - 3200:3000
     networks:
       - grape
     environment:
@@ -14,6 +14,7 @@ services:
       - NODE_ENV=development
   api:
     build: ./back
+    command: sh -c "npm start"
     environment:
       - PORT=4000
     volumes:
@@ -23,13 +24,19 @@ services:
     networks:
       - grape
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     extra_hosts:
       # - "host.docker.internal:host-gateway"
       - "host.docker.internal:172.17.0.1"
   db:
     image: postgres
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d wilders -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -37,7 +44,7 @@ services:
     ports:
       - 5433:5432
     volumes:
-      - ~/dbdata:/var/lib/postgresql/data
+      - wilders-data:/var/lib/postgresql/data
     networks:
       - grape
 
@@ -65,3 +72,6 @@ services:
 
 networks:
   grape:
+
+volumes:
+  wilders-data:
