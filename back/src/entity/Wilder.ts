@@ -17,6 +17,14 @@ export default class Wilder {
   last_name: string;
 
   @Field()
+  @Column({ unique: true })
+  email: string;
+
+  @Field()
+  @Column()
+  password: string;
+
+  @Field()
   @Column()
   age: number;
 
@@ -27,6 +35,12 @@ export default class Wilder {
 
 @InputType({ description: "New recipe data" })
 export class CreateWilderInput implements Partial<Wilder> {
+  @Field()
+  email: string;
+
+  @Field()
+  password: string;
+
   @Field()
   first_name: string;
 
@@ -48,4 +62,11 @@ export class WilderListData {
   @Field({ nullable: true })
   message: string;
 }
+@ObjectType()
+export class WilderLogin {
+  @Field()
+  success: boolean;
 
+  @Field()
+  token: string;
+}

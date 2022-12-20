@@ -12,7 +12,7 @@ COPY tsconfig.json ./
 RUN npm install
 
 COPY database.sqlite ./
-
+COPY .env .env
 COPY src src
 
 # RUN git clone https://github.com/vishnubob/wait-for-it.git

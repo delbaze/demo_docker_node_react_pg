@@ -7,6 +7,9 @@ services:
       - ./front/src:/app/src
     ports:
       - 3200:3000
+    # depends_on:
+    #   api:
+    #     condition: service_healthy
     networks:
       - grape
     environment:
@@ -15,6 +18,11 @@ services:
   api:
     build: ./back
     command: sh -c "npm start"
+    # healthcheck:
+    #   test: 'curl --fail --request POST --header ''content-type: application/json'' --url ''http://localhost:4000'' --data ''{"query":"query { __typename }"}'' || exit 1'
+    #   interval: 5s
+    #   timeout: 5s
+    #   retries: 10
     environment:
       - PORT=4000
     volumes:
@@ -58,6 +66,13 @@ services:
       - 8080:8080
     networks:
       - grape
+  
+  testrunner:
+    build: ./testrunner
+    # depends_on:
+    #   api:
+    #     condition: service_healthy
+
     
   # pgadmin:
   # container_name: pgadmin4_container
